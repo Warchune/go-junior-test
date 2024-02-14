@@ -4,6 +4,8 @@ services:
     image: stock
     container_name: stock
     build: ./stock/
+    ports:
+      - "8083:8083"
     depends_on:
       stock_pg:
         condition: service_healthy
