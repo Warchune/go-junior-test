@@ -45,10 +45,28 @@ func (q *Queries) Arrival(ctx context.Context, arg *ArrivalParams) error {
 	return err
 }
 
+const getAvailabilityBySKUAndStockID = `-- name: GetAvailabilityBySKUAndStockID :one
+select available, reserved
+from item_stock
+where sku = $1 and stock_id = $2
+`
+
+type GetAvailabilityBySKUAndStockIDRow struct {
+	Available pgtype.Int4
+	Reserved  pgtype.Int4
+}
+
+func (q *Queries) GetAvailabilityBySKUAndStockID(ctx context.Context, sku int32, stockID int32) (*GetAvailabilityBySKUAndStockIDRow, error) {
+	row := q.db.QueryRow(ctx, getAvailabilityBySKUAndStockID, sku, stockID)
+	var i GetAvailabilityBySKUAndStockIDRow
+	err := row.Scan(&i.Available, &i.Reserved)
+	return &i, err
+}
+
 const getItemsByStock = `-- name: GetItemsByStock :many
 select i.sku, ist.available, ist.reserved
 from item_stock ist
-    join items i on ist.sku = i.sku
+join items i on ist.sku = i.sku
 where ist.stock_id = $1
 `
 
@@ -81,7 +99,7 @@ func (q *Queries) GetItemsByStock(ctx context.Context, stockID int32) ([]*GetIte
 const getStatusStockAvailability = `-- name: GetStatusStockAvailability :one
 select s.status
 from stocks st
-    join statuses s on st.status_id = s.id
+join statuses s on st.status_id = s.id
 where st.id = $1
 `
 
@@ -94,8 +112,8 @@ func (q *Queries) GetStatusStockAvailability(ctx context.Context, id int32) (str
 
 const reserve = `-- name: Reserve :exec
 update item_stock
-set available = available - $2,
-    reserved = reserved + $2
+set available = case when available - $2 >= 0 then available - $2 else available end,
+reserved = reserved + case when available - $2 >= 0 then $2 else 0 end
 where sku = $1 and stock_id = $3
 `
 
@@ -107,7 +125,7 @@ func (q *Queries) Reserve(ctx context.Context, sku int32, available pgtype.Int4,
 const reserveCancel = `-- name: ReserveCancel :exec
 update item_stock
 set available = available + $2,
-    reserved = reserved - $2
+reserved = reserved - $2
 where sku = $1 and stock_id = $3
 `
 
@@ -119,7 +137,7 @@ func (q *Queries) ReserveCancel(ctx context.Context, sku int32, available pgtype
 const updateItem = `-- name: UpdateItem :exec
 update items
 set available_all = available_all + $2,
-    reserved_all = reserved_all + $3
+reserved_all = reserved_all + $3
 where sku = $1
 `
 

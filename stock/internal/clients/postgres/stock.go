@@ -41,7 +41,7 @@ func (c *client) ArrivalList(ctx context.Context, items []*models.ItemArrival) e
 			Name:      pgtype.Text{String: item.Name},
 			Size:      pgtype.Text{String: item.Size},
 			Sku:       int32(item.SKU),
-			Available: pgtype.Int4{Int32: int32(item.Count)},
+			Available: pgtype.Int4{Int32: int32(item.Count), Valid: true},
 			StockID:   int32(item.StockId),
 		}
 		if err := q.Arrival(ctx, arg); err != nil {
@@ -106,4 +106,12 @@ func (c *client) GetItemsByStock(ctx context.Context, stockId uint32) (item []*m
 		})
 	}
 	return items, nil
+}
+
+func (c *client) GetAvailabilityBySKUAndStockID(ctx context.Context, sku, stockId uint32) (uint32, uint32, error) {
+	res, err := c.q.GetAvailabilityBySKUAndStockID(ctx, int32(sku), int32(stockId))
+	if err != nil {
+		return 0, 0, err
+	}
+	return uint32(res.Available.Int32), uint32(res.Reserved.Int32), nil
 }

@@ -11,6 +11,7 @@ type stocker interface {
 	ReserveCancelList(ctx context.Context, items []*models.ItemReserveCancel) error
 	GetItemsByStock(ctx context.Context, stockId uint32) (item []*models.ItemStock, err error)
 	ArrivalList(ctx context.Context, items []*models.ItemArrival) error
+	GetAvailabilityBySKUAndStockID(ctx context.Context, sku, stockId uint32) (uint32, uint32, error)
 }
 
 type service struct {

@@ -1,7 +1,7 @@
 -- name: GetStatusStockAvailability :one
 select s.status
 from stocks st
-    join statuses s on st.status_id = s.id
+join statuses s on st.status_id = s.id
 where st.id = $1;
 
 -- name: Arrival :exec
@@ -18,26 +18,31 @@ from inserted_item
 on conflict (sku, stock_id) do update
 set available = item_stock.available + excluded.available;
 
+-- name: GetAvailabilityBySKUAndStockID :one
+select available, reserved
+from item_stock
+where sku = $1 and stock_id = $2;
+
 -- name: Reserve :exec
 update item_stock
-set available = available - $2,
-    reserved = reserved + $2
+set available = case when available - $2 >= 0 then available - $2 else available end,
+reserved = reserved + case when available - $2 >= 0 then $2 else 0 end
 where sku = $1 and stock_id = $3;
 
 -- name: ReserveCancel :exec
 update item_stock
 set available = available + $2,
-    reserved = reserved - $2
+reserved = reserved - $2
 where sku = $1 and stock_id = $3;
 
 -- name: UpdateItem :exec
 update items
 set available_all = available_all + $2,
-    reserved_all = reserved_all + $3
+reserved_all = reserved_all + $3
 where sku = $1;
 
 -- name: GetItemsByStock :many
 select i.sku, ist.available, ist.reserved
 from item_stock ist
-    join items i on ist.sku = i.sku
+join items i on ist.sku = i.sku
 where ist.stock_id = $1;

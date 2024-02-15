@@ -12,6 +12,7 @@ import (
 
 type Querier interface {
 	Arrival(ctx context.Context, arg *ArrivalParams) error
+	GetAvailabilityBySKUAndStockID(ctx context.Context, sku int32, stockID int32) (*GetAvailabilityBySKUAndStockIDRow, error)
 	GetItemsByStock(ctx context.Context, stockID int32) ([]*GetItemsByStockRow, error)
 	GetStatusStockAvailability(ctx context.Context, id int32) (string, error)
 	Reserve(ctx context.Context, sku int32, available pgtype.Int4, stockID int32) error

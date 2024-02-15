@@ -12,8 +12,17 @@ func (s *service) Reserve(ctx context.Context, items []*models.ItemReserve) erro
 		if err != nil {
 			return err
 		}
+
 		if status != models.StatusAvailable {
 			return errors.New("stock is not available")
+		}
+
+		available, _, err := s.stockClient.GetAvailabilityBySKUAndStockID(ctx, item.SKU, item.StockId)
+		if err != nil {
+			return err
+		}
+		if available <= item.Count {
+			return errors.New("not enough items available to reserve")
 		}
 	}
 

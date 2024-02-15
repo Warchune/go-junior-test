@@ -16,6 +16,14 @@ func (s *service) ReserveCancel(ctx context.Context, items []*models.ItemReserve
 		if status != models.StatusAvailable {
 			return errors.New("stock is not available")
 		}
+
+		_, reserved, err := s.stockClient.GetAvailabilityBySKUAndStockID(ctx, item.SKU, item.StockId)
+		if err != nil {
+			return err
+		}
+		if reserved <= item.Count {
+			return errors.New("not enough items available to reserve cancel")
+		}
 	}
 
 	return s.stockClient.ReserveCancelList(ctx, items)
