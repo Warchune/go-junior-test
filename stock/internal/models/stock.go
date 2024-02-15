@@ -13,8 +13,19 @@ const (
 	StatusNotAvailable Status = "not available"
 )
 
+func (s Status) IsAvailable() bool {
+	switch s {
+	case StatusAvailable:
+		return true
+	case StatusNotAvailable:
+		return false
+	default:
+		return false
+	}
+}
+
 type ItemStock struct {
-	Sku       uint32
+	SKU       uint32
 	StockId   uint32
 	Available uint32
 	Reserved  uint32

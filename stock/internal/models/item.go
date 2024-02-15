@@ -1,18 +1,22 @@
 package models
 
 type Item struct {
-	Name      string
-	Size      string
-	Sku       uint32
-	Stocks    []string
-	Available uint32
-	Reserved  uint32
+	Name         string
+	Size         string
+	SKU          uint32
+	AvailableAll uint32
+	ReservedAll  uint32
+	StocksId     []uint32
 }
 
 type ItemActions struct {
-	Sku   uint32
-	Count uint32
-	Stock uint32
+	Name    string
+	Size    string
+	SKU     uint32
+	Count   uint32
+	StockId uint32
 }
+
+type ItemArrival ItemActions
 type ItemReserve ItemActions
 type ItemReserveCancel ItemActions
