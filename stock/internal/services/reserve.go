@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"go-junior-test/stock/internal/models"
-	"strconv"
 )
 
 func (s *service) Reserve(ctx context.Context, items []*models.ItemReserve) error {
@@ -13,11 +12,8 @@ func (s *service) Reserve(ctx context.Context, items []*models.ItemReserve) erro
 		if err != nil {
 			return err
 		}
-		if status == models.StatusAvailable {
-			continue
-		} else {
-			err := errors.New(strconv.Itoa(int(item.StockId)) + string(models.StatusNotAvailable))
-			return err
+		if status != models.StatusAvailable {
+			return errors.New("stock is not available")
 		}
 	}
 

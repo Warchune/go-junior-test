@@ -46,7 +46,7 @@ func (c *controller) Reserve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	itemsReserve := make([]*models.ItemReserve, len(req.Items))
+	itemsReserve := make([]*models.ItemReserve, 0)
 	for _, item := range req.Items {
 		itemsReserve = append(itemsReserve, &models.ItemReserve{
 			SKU:     item.SKU,

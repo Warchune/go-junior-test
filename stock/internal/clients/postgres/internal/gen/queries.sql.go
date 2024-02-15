@@ -13,18 +13,17 @@ import (
 
 const arrival = `-- name: Arrival :exec
 with inserted_item as (
-insert into items (name, size, sku, available_all, reserved_all)
-values ($1, $2, $3, $4, 0)
+insert into items (name, size, sku, available_all)
+values ($1, $2, $3, $4)
 on conflict (sku) do update
 set available_all = items.available_all + excluded.available_all
 returning sku
 )
-insert into item_stock (sku, stock_id, available, reserved)
-select sku, $5, $4, 0
+insert into item_stock (sku, stock_id, available)
+select sku, $5, $4
 from inserted_item
 on conflict (sku, stock_id) do update
-set available = item_stock.available + excluded.available,
-reserved = item_stock.reserved
+set available = item_stock.available + excluded.available
 `
 
 type ArrivalParams struct {

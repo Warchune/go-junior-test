@@ -46,7 +46,7 @@ func (c *controller) ReserveCancel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	itemsReserveCancel := make([]*models.ItemReserveCancel, len(req.Items))
+	itemsReserveCancel := make([]*models.ItemReserveCancel, 0)
 	for _, item := range req.Items {
 		itemsReserveCancel = append(itemsReserveCancel, &models.ItemReserveCancel{
 			SKU:     item.SKU,
