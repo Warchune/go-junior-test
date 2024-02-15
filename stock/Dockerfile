@@ -1,4 +1,4 @@
-FROM golang:1.21
+FROM golang:1.22
 
 ADD ./bin/goose /goose
 RUN chmod +x /goose

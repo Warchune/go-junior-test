@@ -1,5 +1,6 @@
 package http
 
 type Config struct {
-	Address string
+	Address     string
+	DatabaseURL string
 }

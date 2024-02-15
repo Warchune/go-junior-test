@@ -2,6 +2,6 @@
 // versions:
 //   sqlc v1.25.0
 
-package stock
+package postgres
 
 import ()

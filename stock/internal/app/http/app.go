@@ -1,7 +1,10 @@
 package http
 
 import (
-	"go-junior-test/stock/internal/clients"
+	"context"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"go-junior-test/stock/internal/clients/postgres"
 	"go-junior-test/stock/internal/handlers"
 	"go-junior-test/stock/internal/services"
 	"log"
@@ -19,7 +22,15 @@ func NewApp(cfg Config) *App {
 }
 
 func (a *App) Run() error {
-	Client := clients.NewClient()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	pgPool, err := newPgPool(ctx, a.cfg.DatabaseURL)
+	if err != nil {
+		return err
+	}
+
+	Client := postgres.NewClient(pgPool)
 
 	Controller := handlers.NewController(services.NewService(Client))
 
@@ -31,4 +42,13 @@ func (a *App) Run() error {
 	log.Printf("http слушает по адресу %s", a.cfg.Address)
 
 	return http.ListenAndServe(a.cfg.Address, nil)
+}
+
+func newPgPool(ctx context.Context, connString string) (*pgxpool.Pool, error) {
+	cfg, err := pgxpool.ParseConfig(connString)
+	if err != nil {
+		return nil, err
+	}
+	cfg.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol //https://github.com/jackc/pgx/issues/1561
+	return pgxpool.NewWithConfig(ctx, cfg)
 }

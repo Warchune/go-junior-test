@@ -1,17 +1,23 @@
-package clients
+package postgres
 
 import (
 	"context"
+	"github.com/jackc/pgx/v5/pgxpool"
+	pg "go-junior-test/stock/internal/clients/postgres/internal/gen"
 	"go-junior-test/stock/internal/models"
 )
 
 type client struct {
+	pool *pgxpool.Pool
+	q    *pg.Queries
 }
 
-func NewClient() *client {
-	return &client{}
+func NewClient(pool *pgxpool.Pool) *client {
+	return &client{
+		pool: pool,
+		q:    pg.New(pool),
+	}
 }
-
 func (c *client) GetStatusStockAvailability(ctx context.Context, stockId uint32) (models.Status, error) {
 	return "", nil
 }

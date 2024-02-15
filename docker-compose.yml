@@ -9,13 +9,26 @@ services:
     depends_on:
       stock_pg:
         condition: service_healthy
+      stock_pgbouncer:
+        condition: service_started
     volumes:
       - ./stock/internal/migrations/postgres:/migrations
     environment:
-      DATABASE_URL: postgresql://postgres:password@stock_pg/stock
+      DATABASE_URL: postgresql://postgres:password@stock_pgbouncer/stock
       GOOSE_DRIVER: postgres
-      GOOSE_DBSTRING: postgresql://postgres:password@stock_pg/stock
+      GOOSE_DBSTRING: postgresql://postgres:password@stock_pgbouncer/stock
       GOOSE_MIGRATION_DIR: /migrations
+
+  stock_pgbouncer:
+    image: edoburu/pgbouncer
+    container_name: stock-pgbouncer
+    environment:
+      DATABASE_URL: postgresql://postgres:password@stock_pg/stock
+      POOL_MODE: transaction
+      ADMIN_USERS: postgres
+    depends_on:
+      stock_pg:
+        condition: service_healthy
 
   stock_pg:
     image: postgres

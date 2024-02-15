@@ -7,7 +7,7 @@ sql:
       - internal/migrations/postgres/002_insert_stocks.sql
     gen:
       go:
-        package: "stock"
+        package: "postgres"
         sql_package: "pgx/v5"
         emit_result_struct_pointers: true
         emit_params_struct_pointers: true
