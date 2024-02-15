@@ -47,7 +47,7 @@ func (q *Queries) Arrival(ctx context.Context, arg *ArrivalParams) error {
 }
 
 const getItemsByStock = `-- name: GetItemsByStock :many
-select i.sku, i.size, ist.available, ist.reserved
+select i.sku, ist.available, ist.reserved
 from item_stock ist
     join items i on ist.sku = i.sku
 where ist.stock_id = $1
@@ -55,7 +55,6 @@ where ist.stock_id = $1
 
 type GetItemsByStockRow struct {
 	Sku       int32
-	Size      pgtype.Text
 	Available pgtype.Int4
 	Reserved  pgtype.Int4
 }
@@ -69,12 +68,7 @@ func (q *Queries) GetItemsByStock(ctx context.Context, stockID int32) ([]*GetIte
 	var items []*GetItemsByStockRow
 	for rows.Next() {
 		var i GetItemsByStockRow
-		if err := rows.Scan(
-			&i.Sku,
-			&i.Size,
-			&i.Available,
-			&i.Reserved,
-		); err != nil {
+		if err := rows.Scan(&i.Sku, &i.Available, &i.Reserved); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)

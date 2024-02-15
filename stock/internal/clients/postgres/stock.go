@@ -64,6 +64,9 @@ func (c *client) ReserveList(ctx context.Context, items []*models.ItemReserve) e
 		if err := q.Reserve(ctx, int32(item.SKU), pgtype.Int4{Int32: int32(item.Count), Valid: true}, int32(item.StockId)); err != nil {
 			return err
 		}
+		if err := q.UpdateItem(ctx, int32(item.SKU), pgtype.Int4{Int32: int32(0 - item.Count)}, pgtype.Int4{Int32: int32(item.Count)}); err != nil {
+			return err
+		}
 	}
 	return tx.Commit(ctx)
 }
@@ -81,6 +84,9 @@ func (c *client) ReserveCancelList(ctx context.Context, items []*models.ItemRese
 		if err := q.ReserveCancel(ctx, int32(item.SKU), pgtype.Int4{Int32: int32(item.Count), Valid: true}, int32(item.StockId)); err != nil {
 			return err
 		}
+		if err := q.UpdateItem(ctx, int32(item.SKU), pgtype.Int4{Int32: int32(item.Count)}, pgtype.Int4{Int32: int32(0 - item.Count)}); err != nil {
+			return err
+		}
 	}
 	return tx.Commit(ctx)
 }
@@ -90,11 +96,13 @@ func (c *client) GetItemsByStock(ctx context.Context, stockId uint32) (item []*m
 	if err != nil {
 		return nil, err
 	}
-	items := make([]*models.ItemStock, len(res))
+	items := make([]*models.ItemStock, 0)
 	for _, item := range res {
 		items = append(items, &models.ItemStock{
 			SKU:       uint32(item.Sku),
 			Available: uint32(item.Available.Int32),
+			Reserved:  uint32(item.Reserved.Int32),
+			StockId:   stockId,
 		})
 	}
 	return items, nil

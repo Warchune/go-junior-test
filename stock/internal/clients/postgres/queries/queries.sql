@@ -38,7 +38,7 @@ set available_all = available_all + $2,
 where sku = $1;
 
 -- name: GetItemsByStock :many
-select i.sku, i.size, ist.available, ist.reserved
+select i.sku, ist.available, ist.reserved
 from item_stock ist
     join items i on ist.sku = i.sku
 where ist.stock_id = $1;
