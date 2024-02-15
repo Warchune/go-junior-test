@@ -12,39 +12,91 @@ import (
 )
 
 const arrival = `-- name: Arrival :exec
+with inserted_item as (
+insert into items (name, size, sku, available_all, reserved_all)
+values ($1, $2, $3, $4, 0)
+on conflict (sku) do update
+set available_all = items.available_all + excluded.available_all
+returning sku
+)
 insert into item_stock (sku, stock_id, available, reserved)
-values ($1, $2, $3, 0)
+select sku, $5, $4, 0
+from inserted_item
 on conflict (sku, stock_id) do update
-set available = item_stock.available + EXCLUDED.available
+set available = item_stock.available + excluded.available,
+reserved = item_stock.reserved
 `
 
-func (q *Queries) Arrival(ctx context.Context, sku int32, stockID int32, available pgtype.Int4) error {
-	_, err := q.db.Exec(ctx, arrival, sku, stockID, available)
+type ArrivalParams struct {
+	Name      pgtype.Text
+	Size      pgtype.Text
+	Sku       int32
+	Available pgtype.Int4
+	StockID   int32
+}
+
+func (q *Queries) Arrival(ctx context.Context, arg *ArrivalParams) error {
+	_, err := q.db.Exec(ctx, arrival,
+		arg.Name,
+		arg.Size,
+		arg.Sku,
+		arg.Available,
+		arg.StockID,
+	)
 	return err
 }
 
-const getItemsByStock = `-- name: GetItemsByStock :exec
-select i.name, i.size, ist.available, ist.reserved
+const getItemsByStock = `-- name: GetItemsByStock :many
+select i.sku, i.size, ist.available, ist.reserved
 from item_stock ist
     join items i on ist.sku = i.sku
 where ist.stock_id = $1
 `
 
-func (q *Queries) GetItemsByStock(ctx context.Context, stockID int32) error {
-	_, err := q.db.Exec(ctx, getItemsByStock, stockID)
-	return err
+type GetItemsByStockRow struct {
+	Sku       int32
+	Size      pgtype.Text
+	Available pgtype.Int4
+	Reserved  pgtype.Int4
 }
 
-const getStatusStockAvailability = `-- name: GetStatusStockAvailability :exec
+func (q *Queries) GetItemsByStock(ctx context.Context, stockID int32) ([]*GetItemsByStockRow, error) {
+	rows, err := q.db.Query(ctx, getItemsByStock, stockID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetItemsByStockRow
+	for rows.Next() {
+		var i GetItemsByStockRow
+		if err := rows.Scan(
+			&i.Sku,
+			&i.Size,
+			&i.Available,
+			&i.Reserved,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getStatusStockAvailability = `-- name: GetStatusStockAvailability :one
 select s.status
 from stocks st
     join statuses s on st.status_id = s.id
 where st.id = $1
 `
 
-func (q *Queries) GetStatusStockAvailability(ctx context.Context, id int32) error {
-	_, err := q.db.Exec(ctx, getStatusStockAvailability, id)
-	return err
+func (q *Queries) GetStatusStockAvailability(ctx context.Context, id int32) (string, error) {
+	row := q.db.QueryRow(ctx, getStatusStockAvailability, id)
+	var status string
+	err := row.Scan(&status)
+	return status, err
 }
 
 const reserve = `-- name: Reserve :exec

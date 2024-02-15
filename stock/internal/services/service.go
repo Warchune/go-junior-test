@@ -7,10 +7,10 @@ import (
 
 type stocker interface {
 	GetStatusStockAvailability(ctx context.Context, stockId uint32) (models.Status, error)
-	Reserve(ctx context.Context, sku uint32, count uint32, stockId uint32) error
-	ReserveCancel(ctx context.Context, sku uint32, count uint32, stockId uint32) error
+	ReserveList(ctx context.Context, items []*models.ItemReserve) error
+	ReserveCancelList(ctx context.Context, items []*models.ItemReserveCancel) error
 	GetItemsByStock(ctx context.Context, stockId uint32) (item []*models.ItemStock, err error)
-	Arrival(ctx context.Context, sku uint32, count uint32, stockId uint32) error
+	ArrivalList(ctx context.Context, items []*models.ItemArrival) error
 }
 
 type service struct {

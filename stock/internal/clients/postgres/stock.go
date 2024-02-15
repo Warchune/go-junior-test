@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	pg "go-junior-test/stock/internal/clients/postgres/internal/gen"
 	"go-junior-test/stock/internal/models"
@@ -19,21 +20,82 @@ func NewClient(pool *pgxpool.Pool) *client {
 	}
 }
 func (c *client) GetStatusStockAvailability(ctx context.Context, stockId uint32) (models.Status, error) {
-	return "", nil
+	res, err := c.q.GetStatusStockAvailability(ctx, int32(stockId))
+	if err != nil {
+		return "", nil
+	}
+	return models.Status(res), nil
 }
 
-func (c *client) Arrival(ctx context.Context, sku uint32, count uint32, stockId uint32) error {
-	return nil
+func (c *client) ArrivalList(ctx context.Context, items []*models.ItemArrival) error {
+	tx, err := c.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
+	q := c.q.WithTx(tx)
+	for _, item := range items {
+		arg := &pg.ArrivalParams{
+			Name:      pgtype.Text{String: item.Name},
+			Size:      pgtype.Text{String: item.Size},
+			Sku:       int32(item.SKU),
+			Available: pgtype.Int4{Int32: int32(item.Count)},
+			StockID:   int32(item.StockId),
+		}
+		if err := q.Arrival(ctx, arg); err != nil {
+			return err
+		}
+	}
+	return tx.Commit(ctx)
 }
 
-func (c *client) Reserve(ctx context.Context, sku uint32, count uint32, stockId uint32) error {
-	return nil
+func (c *client) ReserveList(ctx context.Context, items []*models.ItemReserve) error {
+	tx, err := c.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
+	q := c.q.WithTx(tx)
+	for _, item := range items {
+		if err := q.Reserve(ctx, int32(item.SKU), pgtype.Int4{Int32: int32(item.Count), Valid: true}, int32(item.StockId)); err != nil {
+			return err
+		}
+	}
+	return tx.Commit(ctx)
 }
 
-func (c *client) ReserveCancel(ctx context.Context, sku uint32, count uint32, stockId uint32) error {
-	return nil
+func (c *client) ReserveCancelList(ctx context.Context, items []*models.ItemReserveCancel) error {
+	tx, err := c.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
+	q := c.q.WithTx(tx)
+	for _, item := range items {
+		if err := q.ReserveCancel(ctx, int32(item.SKU), pgtype.Int4{Int32: int32(item.Count), Valid: true}, int32(item.StockId)); err != nil {
+			return err
+		}
+	}
+	return tx.Commit(ctx)
 }
 
 func (c *client) GetItemsByStock(ctx context.Context, stockId uint32) (item []*models.ItemStock, err error) {
-	return nil, nil
+	res, err := c.q.GetItemsByStock(ctx, int32(stockId))
+	if err != nil {
+		return nil, err
+	}
+	items := make([]*models.ItemStock, len(res))
+	for _, item := range res {
+		items = append(items, &models.ItemStock{
+			SKU:       uint32(item.Sku),
+			Available: uint32(item.Available.Int32),
+		})
+	}
+	return items, nil
 }
