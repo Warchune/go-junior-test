@@ -1,0 +1,259 @@
+### Добавление позиции на склад
+# ArrivalRequest {
+#	Items [] {
+#		Name    string
+#		Size    string
+#		SKU     uint32
+#		Count   uint32
+#		StockId uint32
+#	}
+#}
+POST localhost:8083/stock/arrival
+Content-Type: application/json
+
+{
+  "Items": [
+    {
+      "Name":"футболка",
+      "Size":"M",
+      "SKU": 10,
+      "Count": 10,
+      "StockId": 1
+    }
+  ]
+}
+###
+# Ожидаемый ответ:
+# HTTP/1.1 200 OK
+# Date: Thu, 15 Feb 2024 10:27:53 GMT
+# Content-Length: 0
+
+### Получение кол-ва оставшихся товаров на складе
+# InfoRequest  {
+#	StockId uint32
+# }
+#
+# InfoResponse  {
+#	Items [] {
+#       SKU       uint32
+#	    StockId   uint32
+#	    Available uint32
+#	    Reserved  uint32
+# }
+GET localhost:8083/stock/info
+Content-Type: application/json
+
+{
+  "StockId":1
+}
+
+###
+# Ожидаемый ответ:
+#HTTP/1.1 200 OK
+#Content-Type: application/json
+#Date: Thu, 15 Feb 2024 10:29:03 GMT
+#Content-Length: 276
+#
+#{
+#  "Items": [
+#    {
+#      "SKU": 831,
+#      "StockId": 1,
+#      "Available": 10,
+#      "Reserved": 2
+#    },
+#    {
+#      "SKU": 9014,
+#      "StockId": 1,
+#      "Available": 200,
+#      "Reserved": 50
+#    },
+#    {
+#      "SKU": 7770,
+#      "StockId": 1,
+#      "Available": 41,
+#      "Reserved": 8
+#    },
+#    {
+#      "SKU": 7100,
+#      "StockId": 1,
+#      "Available": 8,
+#      "Reserved": 1
+#    },
+#    {
+#      "SKU": 10,
+#      "StockId": 1,
+#      "Available": 70,
+#      "Reserved": 20
+#    }
+#  ]
+#}
+
+### освобождение резерва товаров
+# ReserveCancelRequest  {
+#	Items [] {
+#		SKU     uint32
+#		Count   uint32
+#		StockId uint32
+#	}
+# }
+POST localhost:8083/stock/reserve_cancel
+Content-Type: application/json
+
+{
+  "Items": [
+    {
+      "SKU": 9014,
+      "Count": 300,
+      "StockId": 1
+    }
+  ]
+}
+
+###
+# Ожидаемый ответ:
+# HTTP/1.1 500 Internal Server Error
+#Date: Thu, 15 Feb 2024 10:33:33 GMT
+#Content-Length: 57
+#Content-Type: text/plain; charset=utf-8
+#
+#controller: not enough items available to reserve cancel
+
+
+### освобождение резерва товаров
+# ReserveCancelRequest  {
+#	Items [] {
+#		SKU     uint32
+#		Count   uint32
+#		StockId uint32
+#	}
+# }
+POST localhost:8083/stock/reserve_cancel
+Content-Type: application/json
+
+{
+  "Items": [
+    {
+      "SKU": 9014,
+      "Count": 1,
+      "StockId": 1
+    }
+  ]
+}
+
+###
+# Ожидаемый ответ:
+# HTTP/1.1 200 OK
+#Date: Thu, 15 Feb 2024 10:34:05 GMT
+#Content-Length: 0
+
+### резервирование товара на складе для доставки
+POST http://localhost:8083/stock/reserve
+Content-Type: application/json
+
+{
+  "Items": [
+    {
+      "SKU": 10,
+      "Count": 1,
+      "StockId": 1
+    }
+  ]
+}
+
+###
+# Ожидаемый ответ:
+# HTTP/1.1 200 OK
+#Date: Thu, 15 Feb 2024 10:34:24 GMT
+#Content-Length: 0
+
+### резервирование товара на складе для доставки
+# ReserveRequest  {
+#	Items [] {
+#		SKU     uint32
+#		Count   uint32
+#		StockId uint32
+#	}
+# }
+POST http://localhost:8083/stock/reserve
+Content-Type: application/json
+
+{
+    "Items": [
+        {
+            "SKU": 10,
+            "Count": 1000,
+            "StockId": 1
+        }
+    ]
+}
+
+###
+# Ожидаемый ответ:
+# HTTP/1.1 500 Internal Server Error
+#Date: Thu, 15 Feb 2024 10:34:44 GMT
+#Content-Length: 50
+#Content-Type: text/plain; charset=utf-8
+#
+#controller: not enough items available to reserve
+
+### Добавление позиции на склад
+# InfoRequest  {
+#	StockId uint32
+# }
+#
+# InfoResponse  {
+#	Items [] {
+#       SKU       uint32
+#	    StockId   uint32
+#	    Available uint32
+#	    Reserved  uint32
+# }
+GET localhost:8083/stock/info
+Content-Type: application/json
+
+{
+  "StockId":1
+}
+
+###
+# Ожидаемый ответ:
+# HTTP/1.1 200 OK
+#Content-Type: application/json
+#Date: Thu, 15 Feb 2024 10:35:13 GMT
+#Content-Length: 276
+#
+#{
+#  "Items": [
+#    {
+#      "SKU": 831,
+#      "StockId": 1,
+#      "Available": 10,
+#      "Reserved": 2
+#    },
+#    {
+#      "SKU": 7770,
+#      "StockId": 1,
+#      "Available": 41,
+#      "Reserved": 8
+#    },
+#    {
+#      "SKU": 7100,
+#      "StockId": 1,
+#      "Available": 8,
+#      "Reserved": 1
+#    },
+#    {
+#      "SKU": 9014,
+#      "StockId": 1,
+#      "Available": 201,
+#      "Reserved": 49
+#    },
+#    {
+#      "SKU": 10,
+#      "StockId": 1,
+#      "Available": 69,
+#      "Reserved": 21
+#    }
+#  ]
+#}
