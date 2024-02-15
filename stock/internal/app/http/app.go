@@ -37,7 +37,7 @@ func (a *App) Run() error {
 	http.HandleFunc("/stock/reserve", Controller.Reserve)
 	http.HandleFunc("/stock/reserve_cancel", Controller.ReserveCancel)
 	http.HandleFunc("/stock/info", Controller.Info)
-	http.HandleFunc("stock/arrival", Controller.Arrival)
+	http.HandleFunc("/stock/arrival", Controller.Arrival)
 
 	log.Printf("http слушает по адресу %s", a.cfg.Address)
 

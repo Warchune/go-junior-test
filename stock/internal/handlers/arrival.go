@@ -14,7 +14,7 @@ type ArrivalRequest struct {
 		Size    string `json:"Size"`
 		SKU     uint32 `json:"SKU,omitempty"`
 		Count   uint32 `json:"Count,omitempty"`
-		StockId uint32 `json:"Stock,omitempty"`
+		StockId uint32 `json:"StockId,omitempty"`
 	}
 }
 
@@ -48,7 +48,7 @@ func (c *controller) Arrival(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	itemsArrival := make([]*models.ItemArrival, len(req.Items))
+	itemsArrival := make([]*models.ItemArrival, 0)
 	for _, item := range req.Items {
 		itemsArrival = append(itemsArrival, &models.ItemArrival{
 			Name:    item.Name,
