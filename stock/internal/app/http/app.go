@@ -2,13 +2,14 @@ package http
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"go-junior-test/stock/internal/clients/postgres"
 	"go-junior-test/stock/internal/handlers"
 	"go-junior-test/stock/internal/services"
 	"log"
 	"net/http"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type App struct {

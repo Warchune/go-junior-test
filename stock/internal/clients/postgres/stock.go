@@ -2,10 +2,11 @@ package postgres
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
 	pg "go-junior-test/stock/internal/clients/postgres/internal/gen"
 	"go-junior-test/stock/internal/models"
+
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type client struct {
