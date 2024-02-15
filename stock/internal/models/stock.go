@@ -15,7 +15,7 @@ const (
 
 type ItemStock struct {
 	Sku       uint32
-	StockName string
+	StockId   uint32
 	Available uint32
 	Reserved  uint32
 }

@@ -12,7 +12,7 @@ func NewClient() *client {
 	return &client{}
 }
 
-func (c *client) GetStatusAvailability(ctx context.Context, stockId uint32) (models.Status, error) {
+func (c *client) GetStatusStockAvailability(ctx context.Context, stockId uint32) (models.Status, error) {
 	return "", nil
 }
 
@@ -28,6 +28,6 @@ func (c *client) ReserveCancel(ctx context.Context, sku uint32, count uint32, st
 	return nil
 }
 
-func (c *client) GetBySku(ctx context.Context, sku uint32) (item *models.ItemStock, err error) {
+func (c *client) GetItemsByStock(ctx context.Context, stockId uint32) (item []*models.ItemStock, err error) {
 	return nil, nil
 }

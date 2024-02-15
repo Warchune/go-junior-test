@@ -1,0 +1,17 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "internal/clients/postgres/queries/queries.sql"
+    schema:
+      - internal/migrations/postgres/001_create_stocks.sql
+      - internal/migrations/postgres/002_insert_stocks.sql
+    gen:
+      go:
+        package: "stock"
+        sql_package: "pgx/v5"
+        emit_result_struct_pointers: true
+        emit_params_struct_pointers: true
+        emit_interface: true
+        omit_unused_structs: true
+        query_parameter_limit: 4
+        out: "internal/clients/postgres/internal/gen"
